@@ -1,2 +1,15 @@
-# assortment-optimization
-Optimizing an assortment of products based on measures of similarity.
+Similarity-Based Product Assortment Optimization
+================
+
+## Abstract
+
+Optimizing product assortments is a challenging problem. For example,
+with a limited number of facings for a given CPG product, what products
+do you put on the shelf? How many facings of each? Existing models call
+for placing the most popular items on the shelf. In this project, we try
+and incorporate measures of similarity between products to optimize an
+assortment that accounts for product diversity.
+
+For general details on GitHub usage, project organization, and project
+workflow, see [Research Assistant
+Training](https://github.com/marcdotson/ra-training).
