@@ -13,3 +13,4 @@ Each script should do something specific (like tidyverse functions), have a desc
 * Use `here::here()` to specify files paths.
 * Use tidyverse functions as much as possible.
 * Try and follow the [tidyverse style guide](https://style.tidyverse.org).
+* Have fun!
