@@ -36,9 +36,9 @@ memory.limit(size = 50000)
 Unzip file.
 
 ```{r}
-untar("peanutbutter.tgz", list = TRUE)
+untar("C:/Users/samue/Documents/peanutbutter.tgz", list = TRUE)
 
-untar("peanutbutter.tgz")
+untar("C:/Users/samue/Documents/peanutbutter.tgz")
 
 move_11 <- read_tsv("nielsen_extracts/RMS/2011/Movement_Files/0506_2011/1421_2011.tsv")
 
@@ -203,6 +203,7 @@ full_11_12_13 <- full_11_12_13 %>% left_join(avgprice)
 ```
 
 ```{r}
-full_11_12_13 <- full_11_12_13[,c(1:11,32:38)]
+full_11_12_13 <- full_11_12_13[,c(1:11,30,32:38)]
 ```
+
 
