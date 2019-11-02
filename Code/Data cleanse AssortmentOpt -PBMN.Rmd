@@ -3,6 +3,7 @@ title: "Data Cleanse-Assortment Optimization"
 output: word_document
 ---
  
+Specify that NA in the feature display = 0.  
  
 Install packages.
 
@@ -203,7 +204,7 @@ full_11_12_13 <- full_11_12_13 %>% left_join(avgprice)
 ```
 
 ```{r}
-full_11_12_13 <- full_11_12_13[,c(1:11,30,32:38)]
+full_11_12_13 <- full_11_12_13[,c(1:11,22:25,30,32:38)]
 ```
 
 
