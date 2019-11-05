@@ -1,10 +1,42 @@
 ---
 title: "Similarity-Based Product Assortment Optimization"
-output: github_document
+output:
+  github_document:
+    pandoc_args: --webtex
 ---
 
 ## Abstract
 
-Optimizing product assortments is a challenging problem. For example, with a limited number of facings for a given CPG product, what products do you put on the shelf? How many facings of each? Existing models call for placing the most popular items on the shelf. In this project, we try and incorporate measures of similarity between products to optimize an assortment that accounts for product diversity.
+Optimizing product assortments is a challenging problem. For example,
+with a limited number of facings for a given CPG product, what products
+do you put on the shelf? How many facings of each? Existing models call
+for placing the most popular items on the shelf. In this project, we try
+and incorporate measures of similarity between products to optimize an
+assortment that accounts for product diversity.
 
-For general details on GitHub usage, project organization, and project workflow, see [Research Assistant Training](https://github.com/marcdotson/ra-training).
+## Model Development
+
+We model the impact of product assortment, price, and promotional choices on sales using a 2-stage model.  In stage 1 we model the impact on price and promotion on market share using a modified market share attraction model.  We specify the attractiveness (A) of each product as:
+
+$$ A_{it} = \beta_{0i} +  \beta^p_{it}p_{it} + \beta^f_{it}f_{it} + \beta^d_{it} + \varepsilon_{it}$$
+
+where $\beta_{0i}$ is the product specific attractiveness (SKU intercept) and  $p_{it}$ is the price for product $i$ in time period $t$. $f_{it}$ and $d_{it}$ are binary indicators that are equal to $1$ if the product was either Featured or Displayed during time period $t$.  For reasons that will be discussed later, we assume that:
+
+$$ \varepsilon_{it} \sim N\left(0, \Sigma_t\right) $$
+
+Given this model structure we can compute the market share for an product $i$ as:
+
+$$ \int { ... } $$
+
+Stage 2 of our approach models total category sales as:
+
+$$S_t = \alpha_0 + \alpha_1 T_t + \alpha_2 G_t + \alpha_3 \sum _{ i }^{  }{ A_{ it}  } + \alpha_4| R_t|+\eta_t$$ 
+
+$S_t$ denotes total category sales, $T_t$ is a term that captures trend and $G_t$ is a measure of category seasonality in time $t$.  $\alpha_3$ captures the impact of movements in total category attractiveness on sales and should be positively valued.  For example, if all items in the category are being promoted total category attractiveness, and by extension sales, should increase.  
+
+$|R_t| \in \left[0,1\right]$ is the determinant of the correlation matrix corresponding to the covariance matrix $|\Sigma_t|$.  The determinant of a correlation matrix lies on the $\left[0,1\right]$ interval where $1$ indicates that the correlations are equal to $0$.  As such, $\alpha_4$ captures the influence of assortment variety on category sales.  We expect the value of $\alpha_4$ to be positive, indicating that category sales increase as the variety of the assortment increases 
+
+
+For general details on GitHub usage, project organization, and project
+workflow, see [Research Assistant
+Training](https://github.com/marcdotson/ra-training).
