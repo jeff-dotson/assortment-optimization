@@ -212,7 +212,9 @@ rm(avgprice,ind_store_sales,switchers)
 ```
 
 
-Here is where we try the API call. We will try the top 10 upcs and vary the length if necessary. 
+Here is where we try the API call. We will try the top 10 upcs and vary the length if necessary. Need to relook at the forloop. 
+
+### Need to relook at the call that went through. I only have 1 remaining call this month. 
 
 ```{r}
 # Find top UPC's 
@@ -220,11 +222,23 @@ upcs <- aggregate(units ~ upc, data = full_11_12_13, sum)
 
 upcs <- upcs %>% arrange(desc(units))
 
-upc <- upcs[1:10,1]
+upc <- upcs[,1]
 
 endpoint <- "&formatted=y&key=m6wkhyck9nmvsztpal3i9aacokpdiy"
 base <- "https://api.barcodelookup.com/v2/products?barcode="
 
+## For loop to collect information
+
+apicalls <- for (i in length(upc)) {
+  call <- paste(base,upc[i],endpoint, sep = "")
+  get_upc[[i]] <- GET(call)
+}
+
+call1 <- paste(base,upc[1],endpoint, sep = "")
+
+get_upc <- GET(call1)
+
+get_upc_text <- content(get_upc, "text")
 
 
 
