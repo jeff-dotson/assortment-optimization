@@ -32,32 +32,36 @@ library(forecast)
 library(tidyverse)
 library(httr)
 library(jsonlite)
+library(stringr)
+library(tidytext)
 memory.limit(size = 50000)
 ```
 
 
 Unzip file.
 
+try reading in all upcs as strings
+
 ```{r}
 untar("C:/Users/marke/Downloads/peanutbutter.tgz", list = TRUE)
 
 untar("C:/Users/marke/Downloads/peanutbutter.tgz")
 
-move_11 <- read_tsv("nielsen_extracts/RMS/2011/Movement_Files/0506_2011/1421_2011.tsv")
+move_11 <- read_tsv("nielsen_extracts/RMS/2011/Movement_Files/0506_2011/1421_2011.tsv", col_types = "dddddddd")
 
-stores_11 <- read_tsv("nielsen_extracts/RMS/2011/Annual_Files/stores_2011.tsv")
+stores_11 <- read_tsv("nielsen_extracts/RMS/2011/Annual_Files/stores_2011.tsv", col_types = "ddddccdcdcdc")
 
-move_12 <- read_tsv("nielsen_extracts/RMS/2012/Movement_Files/0506_2012/1421_2012.tsv")
+move_12 <- read_tsv("nielsen_extracts/RMS/2012/Movement_Files/0506_2012/1421_2012.tsv", col_types = "dddddddd")
 
-stores_12 <- read_tsv("nielsen_extracts/RMS/2012/Annual_Files/stores_2012.tsv")
+stores_12 <- read_tsv("nielsen_extracts/RMS/2012/Annual_Files/stores_2012.tsv",col_types = "ddddccdcdcdc")
 
-move_13 <- read_tsv("nielsen_extracts/RMS/2013/Movement_Files/0506_2013/1421_2013.tsv")
+move_13 <- read_tsv("nielsen_extracts/RMS/2013/Movement_Files/0506_2013/1421_2013.tsv", col_types = "dddddddd")
 
 stores_13 <- read_tsv("nielsen_extracts/RMS/2013/Annual_Files/stores_2013.tsv", col_types = list(col_double(), col_double(),
                         col_double(), col_double(), col_character(), col_character(), col_double(), col_character(), col_double(),
                         col_character(), col_double(), col_character()))
 
-products <- read_tsv("nielsen_extracts/RMS/Master_Files/Latest/products.tsv", quote = "")
+products <- read_tsv("nielsen_extracts/RMS/Master_Files/Latest/products.tsv", quote = "", col_types = "ddcdcdcdcdcdddccd")
 ```
 
 
@@ -204,45 +208,48 @@ avgprice <- full_11_12_13 %>%
 
 full_11_12_13 <- full_11_12_13 %>% left_join(avgprice)
 ```
+Perform string search within brand & upc descr to identify differentiating factors across products. Also format dataset to match any additional information.  
+
+## ACV is commodity volume information. 
 
 ```{r}
-full_11_12_13 <- full_11_12_13[,c(1:11,22:25,30,32:38)]
+# Add necessary columns to fit data. Volume converted to ounces. 
+week <- as.data.frame(sort(unique(full_11_12_13$week_end))) %>% cbind(1:157)
+names(week) <- c("week_end", "week")
 
-rm(avgprice,ind_store_sales,switchers)
-```
+full_11_12_13 <- full_11_12_13 %>% inner_join(week)
 
-
-Here is where we try the API call. We will try the top 10 upcs and vary the length if necessary. Need to relook at the forloop. 
-
-### Need to relook at the call that went through. I only have 1 remaining call this month. 
-
-```{r}
-# Find top UPC's 
-upcs <- aggregate(units ~ upc, data = full_11_12_13, sum)
-
-upcs <- upcs %>% arrange(desc(units))
-
-upc <- upcs[,1]
-
-endpoint <- "&formatted=y&key=m6wkhyck9nmvsztpal3i9aacokpdiy"
-base <- "https://api.barcodelookup.com/v2/products?barcode="
-
-## For loop to collect information
-
-apicalls <- for (i in length(upc)) {
-  call <- paste(base,upc[i],endpoint, sep = "")
-  get_upc[[i]] <- GET(call)
-}
-
-call1 <- paste(base,upc[1],endpoint, sep = "")
-
-get_upc <- GET(call1)
-
-get_upc_text <- content(get_upc, "text")
+full_11_12_13 <- full_11_12_13 %>% mutate(volume = ifelse(size1_units == "PO", size1_amount * units * 16, units * size1_amount), 
+                      price.vol = volume/units)
 
 
 
 
+name <- unique(full_11_12_13$upc_descr) 
+row_number <- 1:257
+upcs <- cbind(row_number,name)
+
+upcs <- as_tibble(upcs)
+upcs <- data.frame(upcs, stringsAsFactors = FALSE)
+upcs <- upcs %>% unnest_tokens(words,name)
+upcs %>% 
+  count(words, sort = TRUE)
+
+unique(upcs$words)
+
+
+chocolate <- c("CHOC","COCOA")
+
+full_11_12_13 <- full_11_12_13 %>% mutate(chunky = if_else(str_detect(full_11_12_13$upc_descr, "CHK"),1,0),
+                                          organic = if_else(str_detect(full_11_12_13$upc_descr, "ORG"),1,0),
+                                          chocolate = if_else(str_detect(full_11_12_13$upc_descr, chocolate),1,0),
+                                          honey = if_else(str_detect(full_11_12_13$upc_descr, "hny"),1,0),
+                                          unsalted = if_else(str_detect(full_11_12_13$upc_descr, "uns"),1,0)) 
+
+#Create necessary data structure before adding additional attributes from string search. 
+full_11_12_13 <- full_11_12_13[,c("week_end","upc","upc_descr","units","price","avgprice","week","volume","price.vol","size1_amount", "sales", "feature", "display")]
+
+rm(avgprice,ind_store_sales,switchers,volume,week)
 ```
 
 
