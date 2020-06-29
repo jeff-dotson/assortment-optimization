@@ -223,8 +223,11 @@ full_11_12_13 <- full_11_12_13 %>% mutate(volume = ifelse(size1_units == "PO", s
                       price.vol = volume/units)
 
 
+```
 
 
+Find unique terms. Add the features explained from UPC_Descr as unique column attribute to finished dataset. 
+```{r}
 name <- unique(full_11_12_13$upc_descr) 
 row_number <- 1:257
 upcs <- cbind(row_number,name)
@@ -235,19 +238,68 @@ upcs <- upcs %>% unnest_tokens(words,name)
 upcs %>% 
   count(words, sort = TRUE)
 
-unique(upcs$words)
+uniterms <- unique(upcs$words)
+
+reducedf <- c("R-F","rf")
+lowsod <- c("l-s","lsd")
+honey <- c("hny", "t-b-kns")
+powder <- c("powder","pwd")
+chocolate <- c("CHOC","COCOA", "chc")
+packed <- c("2p","3p","6p","8p","10p")
+spread <- c("sp","spread")
+hazeln <- c("hznl","hzlnt")
+raspb <- c("rspby", "r-dz")
 
 
-chocolate <- c("CHOC","COCOA")
 
-full_11_12_13 <- full_11_12_13 %>% mutate(chunky = if_else(str_detect(full_11_12_13$upc_descr, "CHK"),1,0),
-                                          organic = if_else(str_detect(full_11_12_13$upc_descr, "ORG"),1,0),
-                                          chocolate = if_else(str_detect(full_11_12_13$upc_descr, chocolate),1,0),
-                                          honey = if_else(str_detect(full_11_12_13$upc_descr, "hny"),1,0),
-                                          unsalted = if_else(str_detect(full_11_12_13$upc_descr, "uns"),1,0)) 
+full_11_12_13 <- full_11_12_13 %>% mutate(
+  reducedfat = if_else(str_detect(full_11_12_13$upc_descr, reducedf),1,0),
+  lowsodium = if_else(str_detect(full_11_12_13$upc_descr, lowsod),1,0),
+  extra = if_else(str_detect(full_11_12_13$upc_descr, "xtra"),1,0),
+  organic = if_else(str_detect(full_11_12_13$upc_descr, "ORG"),1,0),
+  squeeze = if_else(str_detect(full_11_12_13$upc_descr, "sqz"),1,0),
+  organic = if_else(str_detect(full_11_12_13$upc_descr, "ORG"),1,0),
+  nostir = if_else(str_detect(full_11_12_13$upc_descr, "no stir"),1,0),
+  honey = if_else(str_detect(full_11_12_13$upc_descr, honey),1,0),
+  hotpepper = if_else(str_detect(full_11_12_13$upc_descr, "hot pepper"),1,0),
+  whipped = if_else(str_detect(full_11_12_13$upc_descr, "whipped"),1,0),
+  canned = if_else(str_detect(full_11_12_13$upc_descr, "can"),1,0),
+  powder = if_else(str_detect(full_11_12_13$upc_descr, powder),1,0),
+  chunky = if_else(str_detect(full_11_12_13$upc_descr, "CHK"),1,0),
+  creamy = if_else(str_detect(full_11_12_13$upc_descr, "crm"),1,0),
+  pack = if_else(str_detect(full_11_12_13$upc_descr, packed),1,0),
+  togo = if_else(str_detect(full_11_12_13$upc_descr, "to go"),1,0),
+  spread = if_else(str_detect(full_11_12_13$upc_descr, spread),1,0),
+  coconut = if_else(str_detect(full_11_12_13$upc_descr, "coconut"),1,0),
+  fatfree = if_else(str_detect(full_11_12_13$upc_descr, "ff"),1,0),
+  lowfat = if_else(str_detect(full_11_12_13$upc_descr, "low fat"),1,0),
+  hazelnut = if_else(str_detect(full_11_12_13$upc_descr, hazeln),1,0),
+  cinnamon = if_else(str_detect(full_11_12_13$upc_descr, " cn "),1,0),
+  raisin = if_else(str_detect(full_11_12_13$upc_descr, "raisin"),1,0),
+  hydrogenated = if_else(str_detect(full_11_12_13$upc_descr, " h "),1,0),
+  nonhydrogenated = if_else(str_detect(full_11_12_13$upc_descr, " nh"),1,0),
+  raspberry = if_else(str_detect(full_11_12_13$upc_descr,raspb),1,0),
+  unsalted = if_else(str_detect(full_11_12_13$upc_descr, "uns"),1,0),
+  whitechoc = if_else(str_detect(full_11_12_13$upc_descr, "white chocolate"),1,0),
+  maple = if_else(str_detect(full_11_12_13$upc_descr, "maple"),1,0),
+  darkchocolate = if_else(str_detect(full_11_12_13$upc_descr, "D-C"),1,0),
+  reducedsodium = if_else(str_detect(full_11_12_13$upc_descr, " rs "),1,0),
+  strawberry = if_else(str_detect(full_11_12_13$upc_descr, " sb "),1,0),
+  lowsugar = if_else(str_detect(full_11_12_13$upc_descr, "lsg"),1,0),
+  nosugar = if_else(str_detect(full_11_12_13$upc_descr, "nsg"),1,0),
+  banana = if_else(str_detect(full_11_12_13$upc_descr, "bn"),1,0),
+  butter = if_else(str_detect(full_11_12_13$upc_descr, "btr"),1,0),
+  chocolate = if_else(str_detect(full_11_12_13$upc_descr, chocolate),1,0),
+  blend = if_else(str_detect(full_11_12_13$upc_descr, "blnd"),1,0),
+  lessfat = if_else(str_detect(full_11_12_13$upc_descr, "less fat"),1,0))                             
+```
 
-#Create necessary data structure before adding additional attributes from string search. 
-full_11_12_13 <- full_11_12_13[,c("week_end","upc","upc_descr","units","price","avgprice","week","volume","price.vol","size1_amount", "sales", "feature", "display")]
+```{r}
+names(full_11_12_13)
+```
+```{r}
+#Create necessary data structure 
+full_11_12_13 <- full_11_12_13[,c(3,2,21,4,6,38:41,32,36,7,8,42:79)]
 
 rm(avgprice,ind_store_sales,switchers,volume,week)
 ```
