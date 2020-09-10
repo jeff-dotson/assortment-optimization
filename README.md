@@ -85,7 +85,23 @@ correlations are equal to ![0](https://latex.codecogs.com/png.latex?0
 sales. We expect the value of
 ![\\alpha\_4](https://latex.codecogs.com/png.latex?%5Calpha_4
 "\\alpha_4") to be positive, indicating that category sales increase as
-the variety of the assortment increases
+the variety of the assortment increases. Given the functional form of
+our model,
+![e^{\\alpha\_4}](https://latex.codecogs.com/png.latex?e%5E%7B%5Calpha_4%7D
+"e^{\\alpha_4}") is a scale-free measure of assortment value and can be
+interpreted as a multiplier (e.g., a value \> 1 indicates that the
+assortmen is increasing in variety). This will be important as we seek
+to understand heterogenity in the value of assortment through the use of
+a hierarchcial model.
+
+We formall model ![S\_t](https://latex.codecogs.com/png.latex?S_t "S_t")
+using a log-log demand model of the following functional form:
+
+  
+![ S\_t = \\alpha\_0 T\_t^{\\alpha\_1}G\_t^{\\alpha\_2} \\sum \_{ i }^{
+}{ A\_{ it} }^{\\alpha\_3} \\alpha\_4^{| R\_t|}e^{\\eta\_t}
+](https://latex.codecogs.com/png.latex?%20S_t%20%3D%20%5Calpha_0%20T_t%5E%7B%5Calpha_1%7DG_t%5E%7B%5Calpha_2%7D%20%5Csum%20_%7B%20i%20%7D%5E%7B%20%20%7D%7B%20A_%7B%20it%7D%20%20%7D%5E%7B%5Calpha_3%7D%20%5Calpha_4%5E%7B%7C%20R_t%7C%7De%5E%7B%5Ceta_t%7D%20
+" S_t = \\alpha_0 T_t^{\\alpha_1}G_t^{\\alpha_2} \\sum _{ i }^{  }{ A_{ it}  }^{\\alpha_3} \\alpha_4^{| R_t|}e^{\\eta_t} ")  
 
 For general details on GitHub usage, project organization, and project
 workflow, see [Research Assistant

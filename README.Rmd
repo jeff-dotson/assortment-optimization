@@ -34,7 +34,13 @@ $$S_t = \alpha_0 + \alpha_1 T_t + \alpha_2 G_t + \alpha_3 \sum _{ i }^{  }{ A_{ 
 
 $S_t$ denotes total category sales, $T_t$ is a term that captures trend and $G_t$ is a measure of category seasonality in time $t$.  $\alpha_3$ captures the impact of movements in total category attractiveness on sales and should be positively valued.  For example, if all items in the category are being promoted total category attractiveness, and by extension sales, should increase.  
 
-$|R_t| \in \left[0,1\right]$ is the determinant of the correlation matrix corresponding to the covariance matrix $|\Sigma_t|$.  The determinant of a correlation matrix lies on the $\left[0,1\right]$ interval where $1$ indicates that the correlations are equal to $0$.  As such, $\alpha_4$ captures the influence of assortment variety on category sales.  We expect the value of $\alpha_4$ to be positive, indicating that category sales increase as the variety of the assortment increases 
+$|R_t| \in \left[0,1\right]$ is the determinant of the correlation matrix corresponding to the covariance matrix $|\Sigma_t|$.  The determinant of a correlation matrix lies on the $\left[0,1\right]$ interval where $1$ indicates that the correlations are equal to $0$.  As such, $\alpha_4$ captures the influence of assortment variety on category sales.  We expect the value of $\alpha_4$ to be positive, indicating that category sales increase as the variety of the assortment increases.  Given the functional form of our model, $e^{\alpha_4}$ is a scale-free measure of assortment value and can be interpreted as a multiplier (e.g., a value > 1 indicates that the assortmen is increasing in variety).  This will be important as we seek to understand heterogenity in the value of assortment through the use of a hierarchcial model.  
+
+We formall model $S_t$ using a log-log demand model of the following functional form:
+
+$$ S_t = \alpha_0 T_t^{\alpha_1}G_t^{\alpha_2} \sum _{ i }^{  }{ A_{ it}  }^{\alpha_3} \alpha_4^{| R_t|}e^{\eta_t} $$
+
+
 
 
 For general details on GitHub usage, project organization, and project
