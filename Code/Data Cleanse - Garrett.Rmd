@@ -1,0 +1,203 @@
+---
+title: "Data Cleanse - Assortment Optimization - GC"
+author: "Garrett"
+date: "11/9/2020"
+output: html_document
+---
+#Nielsen Data Set Cleaning
+##Setup
+
+Install required packages.
+
+```{r package-install, eval=FALSE, include=FALSE}
+install.packages("tidyverse")
+install.packages("tibbletime")
+install.packages("lubridate")
+install.packages("tsoutliers")
+install.packages("forecast")
+install.packages("rmarkdown")
+install.packages("purrr")
+install.packages("dplyr")
+install.packages("cowplot")
+install.packages("googledrive")
+install.packages("chunked")
+```
+
+Load library and increase memory limit.  This code chunk will automatically load before the other chunks.
+
+```{r libraries, setup, echo=FALSE}
+library(tibble)
+library(stringr)
+library(chunked)
+library(googledrive)
+library(purrr)
+library(readr)
+library(tidyr)
+memory.limit(size = 50000)
+```
+
+## Google Drive Access
+
+Run the code below to be directed to a web browser to authorize tidyverse to access your drive. If the files are shared with you, they should be accessible.  This authorization will be saved on your local computer.
+
+```{r setup-drive}
+drive_auth()
+```
+
+## Process The Archive
+
+Download the file from Drive.  Unzip the archive, store the directories lists.
+
+```{r download-archive, cache=TRUE}
+raw_data_list <- drive_ls(path = 'https://drive.google.com/drive/folders/1srq7SajIbdibMAxxBr69rGb_olTIzWNo?usp=sharing')
+
+cat(raw_data_list$name, sep = "\n")
+
+# Get the file name
+file_name <-
+  readline(prompt = "Please paste the name of the file to be processed: ")
+# Name the data
+data_name <-
+  substr(file_name, 1, str_locate(pattern = "\\.", string = file_name) - 1)
+
+#  download file from drive, This may take a while
+drive_download(file_name,
+               path = file.path(getwd(),
+                                "Tar Files",
+                                sep = .Platform$file.sep,
+                                file_name))
+```
+
+```{r save-directories, dependson=c(file_name,data_name)}
+
+#save file directory
+file_direct <- file.path(getwd(), "Raw Data", data_name)
+
+# Untar the file found in folder Tar Files and save in file_direct
+untar(file.path(getwd(), "Tar Files", sep = .Platform$file.sep, file_name),
+      exdir = file_direct)
+
+# Stores files directories
+stores_direct <-
+  dir(
+    path = file_direct,
+    pattern = "stores_20\\d+\\.tsv$",
+    full.names = TRUE,
+    recursive = TRUE
+  )
+
+# Movement files directories
+move_direct <-
+  dir(
+    path = file_direct,
+    pattern = "\\d+_\\d+\\.tsv$",
+    full.names = TRUE,
+    recursive = TRUE
+  )
+
+# Products file directory
+product_direct <-
+  dir(
+    path = file_direct,
+    pattern = "products\\.tsv",
+    full.names = TRUE,
+    recursive = TRUE
+  )
+```
+
+Read in products and stores.  Run some processing on the stores data to only
+include information on Stores which sell food, and which are in the states ND,
+MN, MO and DC, and stores that don't change retail codes, or parent codes.
+
+```{r read-files, dependson=file_name, cache=TRUE}
+#read in products first
+products <- read_tsv(product_direct, 
+                     quote = "", 
+                     col_types = "ddcdcdcdcdcdddccd" )
+
+# We use this function to filter by the state, and filter for Channel F, food
+# and the four states we are interested in.
+f <- function(x, pos) subset(x, 
+                             channel_code == "F" & 
+                               fips_state_descr %in% c("ND", "MN", "MO" ,"DC"))
+
+stores_full <- stores_direct %>% 
+  map_df(~read_tsv_chunked(., 
+                           DataFrameCallback$new(f), 
+                           chunk_size = 50, 
+                           col_types = "ddddccdcdcdc")) %>% 
+  arrange(store_code_uc)
+
+# Make a selection to use in displaying the results to follow
+stores_sel <- select(stores_full, store_code_uc, year, parent_code, retailer_code)
+
+rm(stores_full)
+
+# Complete the data set by expanding to include each year for every 
+# store code.
+stores_sel <- stores_sel %>% 
+  expand(nesting(store_code_uc, parent_code, retailer_code), year) %>%
+  complete() %>% 
+  group_by(store_code_uc) %>% 
+  arrange(year, .by_group = TRUE) %>% 
+  ungroup()
+```
+###Missing Data
+The following store codes are missing data:
+
+```{r missing-parentcode, echo=FALSE}
+print("Stores With missing Data")
+print(filter(stores_sel, is.na(stores_sel$retailer_code)))
+
+# Filter stores
+
+stores_sel <- stores_sel %>% 
+  filter(
+    !is.na(stores_sel$retailer_code)
+  )
+
+# Create function to show only stores that are available every year, based on
+# the store code.
+g <- function(x, pos) subset(x, store_code_uc %in% stores_sel$store_code_uc)
+
+# Combine all move files into one file, and filter while reading in 
+move_full <- move_direct %>%
+  map_df(
+    ~ read_tsv_chunked(
+      .,
+      DataFrameCallback$new(g),
+      chunk_size = 100000,
+      col_types = "dddddddd"
+    )
+  )
+
+```
+
+Then, we join and format the data. 
+Change 'week_end' variable to year-month-day format.  We also add new column(s):
+sales, which is units * price
+manuf_name, which is the first three 
+
+```{r formatting}
+full_data <-
+  inner_join(move_full, stores_sel, by = "store_code_uc") %>%
+  inner_join(products, by = "upc") %>%
+  mutate(week_end = lubridate::ymd(week_end),
+         sales = units * price,
+         manuf_name = substr(brand_descr, 1, 3))
+
+# Remove unnecessary lists
+rm(move_full, stores_sel, products)
+
+
+# Save full_data for further use
+full_data %>% write_csv(file = file.path(getwd(), "Data", paste(data_name, sep = "", ".csv")))
+
+# Upload file to Google Drive
+drive_mkdir(data_name, path = "Category Captainship - Empirical Generalization/Cleaned Data/", overwrite = FALSE)
+
+drive_put(file.path(getwd(), "Data", paste(data_name, sep = "", ".csv")), path = paste("Category Captainship - Empirical Generalization/Cleaned Data/", data_name, "/", sep = ""), overwrite = TRUE)
+
+rm(full_data, data_name, file_direct, file_name, move_direct, product_direct, stores_direct, f, g)
+
+```
