@@ -8,5 +8,6 @@ Data/*
 .Rhistory
 .RData
 .Ruserdata
+Code/API calls.R
 # Miscellaneous
 .DS_Store
