@@ -8,6 +8,10 @@ Data/*
 .Rhistory
 .RData
 .Ruserdata
+<<<<<<< HEAD
 Code/API calls.R
+=======
+API calls.R
+>>>>>>> 03dc4f3049de483ba07f24ddd8b73bf09dd12170
 # Miscellaneous
 .DS_Store
