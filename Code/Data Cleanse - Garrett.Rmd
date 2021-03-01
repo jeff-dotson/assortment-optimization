@@ -167,7 +167,7 @@ move_full <- move_direct %>%
       .,
       DataFrameCallback$new(g),
       chunk_size = 100000,
-      col_types = "dddddddd"
+      col_types = "ddddddcc"
     )
   )
 
@@ -176,15 +176,34 @@ move_full <- move_direct %>%
 Then, we join and format the data. 
 Change 'week_end' variable to year-month-day format.  We also add new column(s):
 sales, which is units * price
-manuf_name, which is the first three 
+manuf_name, which is the first three letters of the manufacturers name.
 
 ```{r formatting}
 full_data <-
   inner_join(move_full, stores_sel, by = "store_code_uc") %>%
   inner_join(products, by = "upc") %>%
-  mutate(week_end = lubridate::ymd(week_end),
-         sales = units * price,
-         manuf_name = substr(brand_descr, 1, 3))
+  mutate(
+    week_end = lubridate::ymd(week_end),
+    sales = units * price,
+    manuf_name = substr(brand_descr, 1, 3),
+    across(c(feature, display), ~ifelse(is.na(.), FALSE, TRUE))
+  ) %>% 
+  select(
+    -prmult, 
+    -parent_code, 
+    -retailer_code, 
+    -year, 
+    -upc_ver_uc, 
+    -product_module_code, 
+    -product_group_code, 
+    -department_code, 
+    -department_descr, 
+    -brand_code_uc, 
+    -size1_code_uc, 
+    -dataset_found_uc, 
+    -size1_change_flag_uc
+  ) 
+  
 
 # Remove unnecessary lists
 rm(move_full, stores_sel, products)
@@ -196,7 +215,7 @@ full_data %>% write_csv(file = file.path(getwd(), "Data", paste(data_name, sep =
 # Upload file to Google Drive
 drive_mkdir(data_name, path = "Category Captainship - Empirical Generalization/Cleaned Data/", overwrite = FALSE)
 
-drive_put(file.path(getwd(), "Data", paste(data_name, sep = "", ".csv")), path = paste("Category Captainship - Empirical Generalization/Cleaned Data/", data_name, "/", sep = ""), overwrite = TRUE)
+drive_put(file.path(getwd(), "Data", paste(data_name, sep = "", ".csv")), path = paste("Category Captainship - Empirical Generalization/Cleaned Data/", data_name, "/", sep = ""))
 
 rm(full_data, data_name, file_direct, file_name, move_direct, product_direct, stores_direct, f, g)
 
