@@ -28,6 +28,10 @@ barcode_image_lookup <- function(barcode) {
 
 add_image_src <- function(tbl, barcode) {
   tbl %>%
+    group_by({{ barcode }}) %>% 
+    count({{ barcode }}) %>% 
+    arrange(desc(n)) %>% 
+    mutate(img_src = NA) %>% 
     rowwise() %>%
     mutate(img_src = barcode_image_lookup({{ barcode }}))
 }
